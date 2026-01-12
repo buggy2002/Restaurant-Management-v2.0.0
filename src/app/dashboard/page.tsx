@@ -46,7 +46,7 @@ interface DashboardStats {
 }
 
 type FilterType = 'all' | 'day' | 'month' | 'year' | 'custom';
-
+type PosFilterType = 'all' | 'POS1' | 'POS2' | 'POS3';
 
 type ViewType = 'sales' | 'topItems';
 
@@ -63,6 +63,7 @@ export default function DashboardPage() {
     orders: []
   });
   const [filterType, setFilterType] = useState<FilterType>('day');
+  const [posFilter, setPosFilter] = useState<PosFilterType>('all');
   const [dateValue, setDateValue] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -95,7 +96,7 @@ export default function DashboardPage() {
     let mounted = true;
     // eslint-disable-next-line
     setIsLoading(true);
-    getDashboardStats(filterType, dateValue, startDate, endDate).then((data) => {
+    getDashboardStats(filterType, dateValue, startDate, endDate, posFilter).then((data) => {
       if (mounted) {
         // Explicitly cast to unknown then to DashboardStats because getDashboardStats returns 'any' or an inferred object structure
         // that matches, but to be safe and clear:
@@ -107,7 +108,7 @@ export default function DashboardPage() {
     return () => {
       mounted = false;
     };
-  }, [filterType, dateValue, startDate, endDate]);
+  }, [filterType, dateValue, startDate, endDate, posFilter]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 md:pb-8 relative">
@@ -138,54 +139,72 @@ export default function DashboardPage() {
             ตัวกรองวันที่
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-4">
             {/* Filter Type Dropdown + Date Input */}
-            <div className="flex gap-2 items-start">
-              {/* Dropdown for Filter Type */}
-              <select
-                value={filterType}
-                onChange={(e) => handleFilterChange(e.target.value as FilterType)}
-                className="w-32 md:w-40 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
-              >
-                <option value="day">รายวัน</option>
-                <option value="month">รายเดือน</option>
-                <option value="custom">กำหนดเอง</option>
-              </select>
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+              
+              {/* Filter Group: Date & POS */}
+              <div className="flex flex-wrap gap-2 items-center">
+                
+                {/* POS Filter */}
+                 <div className="flex items-center space-x-2">
+                    <span className="text-gray-600 text-xs md:text-sm">จุดขาย:</span>
+                    <select
+                      value={posFilter}
+                      onChange={(e) => setPosFilter(e.target.value as PosFilterType)}
+                      className="bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                    >
+                      <option value="all">ทั้งหมด</option>
+                      <option value="POS1">POS 1</option>
+                      <option value="POS2">POS 2</option>
+                      <option value="POS3">POS 3</option>
+                    </select>
+                 </div>
 
-              {/* Date Input */}
-              {filterType !== 'custom' && (
-                <input
-                  type={filterType === 'day' ? 'date' : 'month'}
-                  value={dateValue}
-                  onChange={(e) => setDateValue(e.target.value)}
-                  className="w-44 md:w-52 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              )}
+                 <div className="h-6 w-px bg-gray-300 hidden md:block mx-2"></div>
 
-              {/* Custom Date Range - Inline */}
-              {filterType === 'custom' && (
-                <>
-                  <div>
+                {/* Date Filter Type */}
+                <select
+                  value={filterType}
+                  onChange={(e) => handleFilterChange(e.target.value as FilterType)}
+                  className="w-32 md:w-40 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                >
+                  <option value="day">รายวัน</option>
+                  <option value="month">รายเดือน</option>
+                  <option value="custom">กำหนดเอง</option>
+                </select>
+
+                {/* Date Input */}
+                {filterType !== 'custom' && (
+                  <input
+                    type={filterType === 'day' ? 'date' : 'month'}
+                    value={dateValue}
+                    onChange={(e) => setDateValue(e.target.value)}
+                    className="w-44 md:w-52 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                )}
+
+                {/* Custom Date Range - Inline */}
+                {filterType === 'custom' && (
+                  <div className="flex items-center gap-2">
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       placeholder="วันที่เริ่มต้น"
-                      className="w-40 md:w-44 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-36 md:w-40 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     />
-                  </div>
-                  <span className="text-gray-400 self-center">-</span>
-                  <div>
+                    <span className="text-gray-400">-</span>
                     <input
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       placeholder="วันที่สิ้นสุด"
-                      className="w-40 md:w-44 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-36 md:w-40 bg-white border border-gray-300 rounded-md px-2.5 py-1.5 text-gray-800 text-xs md:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

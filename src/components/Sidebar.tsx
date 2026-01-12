@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, UtensilsCrossed, Package, Store, LogOut, Wallet, DollarSign, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, Store, LogOut, Wallet, DollarSign, ClipboardList } from 'lucide-react';
 import { logout } from '@/app/actions';
 
 const navItems = [

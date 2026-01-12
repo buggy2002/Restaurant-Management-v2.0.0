@@ -32,6 +32,7 @@ export default function POSPage() {
   const [isCartOpen, setIsCartOpen] = useState(false); // For mobile cart toggle
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [currentPos, setCurrentPos] = useState('POS1'); // Default POS1
 
   // New state for Quantity Input Modal
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
@@ -46,7 +47,7 @@ export default function POSPage() {
       ]);
 
       // Create a map for quick cost lookup: name -> costPerGram
-      const costMap = (registry as any[]).reduce((acc: Record<string, number>, item: RegisteredIngredient) => {
+      const costMap = (registry as unknown as RegisteredIngredient[]).reduce((acc: Record<string, number>, item: RegisteredIngredient) => {
         // We take the latest price (registry is sorted by date desc)
         if (!acc[item.name]) {
           acc[item.name] = item.price / item.quantity;
@@ -106,7 +107,7 @@ export default function POSPage() {
     if (cart.length === 0) return;
     setIsLoading(true);
     try {
-      const result = await submitOrder(cart);
+      const result = await submitOrder(cart, currentPos);
       setMessage(result.message);
       if (result.success) {
         setCart([]);
@@ -123,23 +124,46 @@ export default function POSPage() {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-100 pb-16 md:pb-0 overflow-hidden relative">
-      {/* Loading Overlay */}
-      {isInitialLoading && (
-        <div className="fixed inset-0 bg-white/50 z-[100] flex items-center justify-center backdrop-blur-sm">
-          <Loading />
-        </div>
-      )}
-      {/* Menu Section */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">เลือกเมนู</h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {menuItems.map((item, index) => (
-            <div
-              key={`${item.name}-${index}`}
-              onClick={() => handleItemClick(item)}
-              className="bg-white p-3 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow flex flex-col justify-between h-32"
+    <div className="flex flex-col h-screen bg-gray-100 overflow-hidden relative">
+      {/* POS Navbar */}
+      <div className="bg-white border-b px-6 py-3 flex items-center justify-between shadow-sm z-20 shrink-0">
+        <div className="font-bold text-xl text-gray-800">POS System</div>
+        <div className="flex bg-gray-100 p-1 rounded-xl">
+          {['POS1', 'POS2', 'POS3'].map((pos) => (
+            <button
+              key={pos}
+              onClick={() => setCurrentPos(pos)}
+              className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+                currentPos === pos
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'
+              }`}
             >
+              {pos}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden pb-16 md:pb-0 relative">
+        {/* Loading Overlay */}
+        {isInitialLoading && (
+          <div className="fixed inset-0 bg-white/50 z-100 flex items-center justify-center backdrop-blur-sm">
+            <Loading />
+          </div>
+        )}
+        {/* Menu Section */}
+        <div className="flex-1 p-4 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+             <h1 className="text-2xl font-bold text-gray-800">เลือกเมนู ({currentPos})</h1>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {menuItems.map((item, index) => (
+              <div
+                key={`${item.name}-${index}`}
+                onClick={() => handleItemClick(item)}
+                className="bg-white p-3 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow flex flex-col justify-between h-32"
+              >
               <h3 className="font-bold text-gray-800 line-clamp-1">{item.name}</h3>
               <div className="mt-1">
                 {item.cost !== undefined && item.cost > 0 && (
@@ -305,6 +329,7 @@ export default function POSPage() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -600,7 +600,17 @@ export async function getMenuItems() {
   }
 }
 
-export async function submitOrder(orderItems: { name: string, price: number, quantity: number }[]) {
+interface RegisteredIngredient {
+  rowIndex?: number;
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+  user: string;
+  date: string;
+}
+
+export async function submitOrder(orderItems: { name: string, price: number, quantity: number }[], posId: string = 'POS1') {
   try {
     const registry = await getRegisteredIngredients();
     const menuItems = await getMenuItems();
@@ -609,10 +619,11 @@ export async function submitOrder(orderItems: { name: string, price: number, qua
     let totalPrice = 0;
 
     // Create a map for latest cost per gram: name -> price/quantity
-    const costMap = registry.reduce((acc: Record<string, number>, item: any) => {
+    const costMap = registry.reduce((acc: Record<string, number>, item: RegisteredIngredient) => {
+      const regItem = item;
       // Since registry is sorted by date desc, the first one we see is the latest
-      if (!acc[item.name]) {
-        acc[item.name] = item.price / item.quantity;
+      if (!acc[regItem.name]) {
+        acc[regItem.name] = regItem.price / regItem.quantity;
       }
       return acc;
     }, {});
@@ -635,7 +646,12 @@ export async function submitOrder(orderItems: { name: string, price: number, qua
       totalCost += itemCost * orderItem.quantity;
     }
 
-    const sheet = await getSheet('Orders', ['items', 'totalPrice', 'totalCost', 'date']);
+    // Determine sheet name based on POS ID
+    let sheetName = 'OrdersPos1';
+    if (posId === 'POS2') sheetName = 'OrdersPos2';
+    if (posId === 'POS3') sheetName = 'OrdersPos3';
+
+    const sheet = await getSheet(sheetName, ['items', 'totalPrice', 'totalCost', 'date']);
     await sheet.addRow({
       items: JSON.stringify(orderItems),
       totalPrice,
@@ -643,9 +659,9 @@ export async function submitOrder(orderItems: { name: string, price: number, qua
       date: new Date().toISOString(),
     });
 
-    invalidateCache('Orders');
+    invalidateCache(sheetName);
     revalidatePath('/dashboard');
-    return { success: true, message: 'บันทึกออเดอร์เรียบร้อยแล้ว!' };
+    return { success: true, message: `บันทึกออเดอร์ (${posId}) เรียบร้อยแล้ว!` };
   } catch (error) {
     console.error('Order Error:', error);
     return { success: false, message: 'เกิดข้อผิดพลาดในการบันทึกออเดอร์' };
@@ -1355,11 +1371,32 @@ export async function getDashboardStats(
   filterType: 'all' | 'day' | 'month' | 'year' | 'custom' = 'month',
   dateValue?: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  posFilter: 'all' | 'POS1' | 'POS2' | 'POS3' = 'all'
 ) {
   try {
     // Use Cached Rows
-    const rows = await getCachedRows('Orders', ['items', 'totalPrice', 'totalCost', 'date']);
+    let rows: GoogleSpreadsheetRow[] = [];
+    const headers = ['items', 'totalPrice', 'totalCost', 'date'];
+
+    if (posFilter === 'all') {
+      const [oldRows, rows1, rows2, rows3] = await Promise.all([
+        getCachedRows('Orders', headers),
+        getCachedRows('OrdersPos1', headers),
+        getCachedRows('OrdersPos2', headers),
+        getCachedRows('OrdersPos3', headers),
+      ]);
+      rows = [...oldRows, ...rows1, ...rows2, ...rows3];
+    } else {
+      let sheetName = 'OrdersPos1';
+      if (posFilter === 'POS2') sheetName = 'OrdersPos2';
+      if (posFilter === 'POS3') sheetName = 'OrdersPos3';
+      
+      // If user selects specific POS, we only load that POS sheet. 
+      // Note: Historical 'Orders' sheet is not included here as it wasn't tagged with POS ID.
+      rows = await getCachedRows(sheetName, headers);
+    }
+    
     const stockRows = await getCachedRows('Stock', ['name', 'quantity', 'price', 'user', 'date']);
 
     let totalSales = 0;

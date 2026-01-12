@@ -1,6 +1,8 @@
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library');
-require('dotenv').config({ path: '.env' });
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env' });
 
 async function testConnection() {
   console.log('Testing Google Sheets Connection...');

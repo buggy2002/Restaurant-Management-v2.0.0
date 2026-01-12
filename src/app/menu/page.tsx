@@ -7,7 +7,7 @@ import {
   deleteMenuItem,
   getRegisteredIngredients
 } from '@/app/actions';
-import { Trash2, Plus, Pencil, X, Utensils, Search, ChefHat, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, Plus, Pencil, X, Utensils, Search, ChefHat } from 'lucide-react';
 import Loading from '@/components/Loading';
 
 interface Ingredient {
@@ -78,7 +78,7 @@ export default function MenuPage() {
     // For the selector, we just need unique names from the registry
     // But since registry items might be added multiple times for same name (history),
     // we take the latest or unique list.
-    const unique = items.reduce((acc: Record<string, RegisteredItem>, item: any) => {
+    const unique = items.reduce((acc: Record<string, RegisteredItem>, item: RegisteredItem) => {
       acc[item.name] = item;
       return acc;
     }, {});
@@ -158,7 +158,7 @@ export default function MenuPage() {
     <div className="max-w-7xl mx-auto mt-6 p-4 relative">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 bg-white/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div className="fixed inset-0 bg-white/50 z-100 flex items-center justify-center backdrop-blur-sm">
           <Loading />
         </div>
       )}

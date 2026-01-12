@@ -163,9 +163,9 @@ export default function IngredientsRegistryPage() {
 
     startTransition(async () => {
       const formData = new FormData();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const itemsPayload = JSON.stringify(pendingItems.map(({ tempId, ...rest }) => rest));
       formData.append('items', itemsPayload);
-
       const result = await addMultipleRegisteredIngredients(null, formData);
 
       if (result?.success) {
@@ -260,13 +260,13 @@ export default function IngredientsRegistryPage() {
     });
   };
 
-  const totalPendingPrice = pendingItems.reduce((sum, item) => sum + item.price, 0);
+  // const totalPendingPrice = pendingItems.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <div className="max-w-6xl mx-auto mt-4 md:mt-6 p-2 md:p-4 relative">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 bg-white/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div className="fixed inset-0 bg-white/50 z-100 flex items-center justify-center backdrop-blur-sm">
           <Loading />
         </div>
       )}
@@ -444,7 +444,7 @@ export default function IngredientsRegistryPage() {
 
       {/* Add Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-110 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
             <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-800 flex items-center">
@@ -542,7 +542,7 @@ export default function IngredientsRegistryPage() {
 
       {/* Edit Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-110 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
             <div className="bg-blue-50 px-6 py-4 border-b flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-800">แก้ไขข้อมูล</h2>

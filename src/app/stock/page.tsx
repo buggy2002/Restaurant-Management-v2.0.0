@@ -300,7 +300,7 @@ export default function StockPage() {
     <div className="max-w-6xl mx-auto mt-4 md:mt-6 p-2 md:p-4 relative">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 bg-white/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div className="fixed inset-0 bg-white/50 z-100 flex items-center justify-center backdrop-blur-sm">
           <Loading />
         </div>
       )}

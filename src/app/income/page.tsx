@@ -21,15 +21,12 @@ import {
   Trash2,
   Edit,
   FileText,
-  ChevronDown,
-  ChevronUp,
   Receipt,
   AlertCircle,
   DollarSign,
   Upload,
   Eye,
-  Image,
-  Download,
+  Image as ImageIcon,
   FileSpreadsheet,
 } from 'lucide-react';
 import ExcelJS from 'exceljs';
@@ -56,14 +53,14 @@ interface IncomeItem {
 }
 
 // Common unit options
-const UNIT_OPTIONS = ['กิโล', 'กรัม', 'ลิตร', 'ลูก', 'ถุง', 'ชุด', 'ชิ้น', 'กล่อง', 'ขวด', 'แพ็ค', 'ลัง', 'ถัง', 'วัน', 'รายการ'];
+const _UNIT_OPTIONS = ['กิโล', 'กรัม', 'ลิตร', 'ลูก', 'ถุง', 'ชุด', 'ชิ้น', 'กล่อง', 'ขวด', 'แพ็ค', 'ลัง', 'ถัง', 'วัน', 'รายการ'];
 
 export default function IncomePage() {
   // Data State
   const [events, setEvents] = useState<IncomeEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<IncomeEvent | null>(null);
   const [incomeItems, setIncomeItems] = useState<IncomeItem[]>([]);
-  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+  const [_expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [filterDate, setFilterDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // UI State
@@ -82,7 +79,7 @@ export default function IncomePage() {
   // Form State - Item
   const [itemName, setItemName] = useState('');
   const [itemQuantity, setItemQuantity] = useState('');
-  const [itemUnit, setItemUnit] = useState('กิโล');
+  const [_itemUnit, setItemUnit] = useState('รายการ');
   const [itemUnitPrice, setItemUnitPrice] = useState('');
   const [itemTotalPrice, setItemTotalPrice] = useState('');
   const [itemNotes, setItemNotes] = useState('');
@@ -161,7 +158,8 @@ export default function IncomePage() {
   };
 
   // Toggle event expansion (not needed anymore but keep for compatibility)
-  const toggleEventExpansion = async (event: IncomeEvent) => {
+  const toggleEventExpansion = async (_event: IncomeEvent) => {
+    console.log('Toggle event expansion', _event);
     // Component is always expanded now, but keep function for compatibility
   };
 
@@ -439,8 +437,8 @@ export default function IncomePage() {
 
             // Add image to worksheet at the receipt column (Column 8, Index 7)
             worksheet.addImage(imageId, {
-              tl: { col: 7.1, row: rowIndex - 0.9 } as any,
-              br: { col: 7.9, row: rowIndex - 0.1 } as any,
+              tl: { col: 7.1, row: rowIndex - 0.9 } as ExcelJS.Anchor,
+              br: { col: 7.9, row: rowIndex - 0.1 } as ExcelJS.Anchor,
               editAs: 'oneCell'
             });
 
@@ -478,7 +476,7 @@ export default function IncomePage() {
     <div className="max-w-6xl mx-auto mt-4 md:mt-6 p-2 md:p-4 relative pb-20 md:pb-4">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 bg-white/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div className="fixed inset-0 bg-white/50 z-100 flex items-center justify-center backdrop-blur-sm">
           <Loading />
         </div>
       )}
@@ -535,7 +533,7 @@ export default function IncomePage() {
             >
               {/* Event Header */}
               <div
-                className={`px-5 py-4 cursor-pointer transition-colors ${isExpanded ? 'bg-gradient-to-r from-emerald-50 to-teal-50' : 'hover:bg-gray-50'
+                className={`px-5 py-4 cursor-pointer transition-colors ${isExpanded ? 'bg-linear-to-r from-emerald-50 to-teal-50' : 'hover:bg-gray-50'
                   }`}
                 onClick={() => currentEvent && toggleEventExpansion(currentEvent)}
               >
@@ -645,7 +643,7 @@ export default function IncomePage() {
                         {/* Desktop Table */}
                         <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gradient-to-r from-emerald-50 to-teal-50">
+                            <thead className="bg-linear-to-r from-emerald-50 to-teal-50">
                               <tr>
                                 <th className="px-4 py-3 text-left text-xs font-bold text-emerald-700 uppercase tracking-wider">
                                   ลำดับที่
@@ -732,7 +730,7 @@ export default function IncomePage() {
                           {eventItems.map((item, index) => (
                             <div
                               key={item.id}
-                              className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-100"
+                              className="bg-linear-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-100"
                             >
                               <div className="flex justify-between items-start mb-2">
                                 <div>
@@ -787,7 +785,7 @@ export default function IncomePage() {
                   </div>
 
                   {/* Summary Footer - Always show */}
-                  <div className="mt-4 pt-4 border-t border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4">
+                  <div className="mt-4 pt-4 border-t border-gray-200 bg-linear-to-r from-emerald-50 to-teal-50 rounded-xl p-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">จำนวนรายการ:</span>
                       <span className="font-semibold text-gray-800">{eventItems.length} รายการ</span>
@@ -808,7 +806,7 @@ export default function IncomePage() {
       {isEditEventModalOpen && editingEvent && (
         <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-4 flex justify-between items-center">
+            <div className="bg-linear-to-r from-blue-500 to-indigo-500 px-6 py-4 flex justify-between items-center">
               <h2 className="text-lg font-bold text-white flex items-center">
                 <Edit className="w-5 h-5 mr-2" /> แก้ไขงาน
               </h2>
@@ -879,7 +877,7 @@ export default function IncomePage() {
       {isItemModalOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in overflow-hidden max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 flex justify-between items-center">
+            <div className="bg-linear-to-r from-emerald-500 to-teal-500 px-6 py-4 flex justify-between items-center">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center">
                   <Plus className="w-5 h-5 mr-2" /> เพิ่มรายการรายรับ
@@ -913,7 +911,7 @@ export default function IncomePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 text-emerald-700 font-bold">ยอดเงินที่รับ (บาท)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ยอดเงินที่รับ (บาท)</label>
                 <input
                   type="number"
                   value={itemTotalPrice}
@@ -950,7 +948,7 @@ export default function IncomePage() {
                   }`}>
                   {itemFile ? (
                     <>
-                      <Image className="w-5 h-5" />
+                      <ImageIcon className="w-5 h-5" />
                       <span className="truncate max-w-[200px]">{itemFile.name}</span>
                       <button
                         type="button"
@@ -1008,7 +1006,7 @@ export default function IncomePage() {
       {isEditItemModalOpen && editingItem && (
         <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-4 flex justify-between items-center">
+            <div className="bg-linear-to-r from-blue-500 to-indigo-500 px-6 py-4 flex justify-between items-center">
               <h2 className="text-lg font-bold text-white flex items-center">
                 <Edit className="w-5 h-5 mr-2" /> แก้ไขรายการ
               </h2>
@@ -1036,7 +1034,7 @@ export default function IncomePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 text-blue-700 font-bold">ยอดเงินที่รับ (บาท)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ยอดเงินที่รับ (บาท)</label>
                 <input
                   type="number"
                   value={itemTotalPrice}
@@ -1069,7 +1067,7 @@ export default function IncomePage() {
                     }`}>
                     {editFile ? (
                       <>
-                        <Image className="w-5 h-5" />
+                        <ImageIcon className="w-5 h-5" />
                         <span className="truncate max-w-[150px]">{editFile.name}</span>
                       </>
                     ) : (
